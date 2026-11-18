@@ -1,0 +1,66 @@
+{
+ "ablation": {
+  "all features": [
+   99.55,
+   0.3
+  ],
+  "without N": [
+   99.43,
+   0.27
+  ],
+  "without P": [
+   99.11,
+   0.4
+  ],
+  "without K": [
+   99.18,
+   0.43
+  ],
+  "without temperature": [
+   99.36,
+   0.32
+  ],
+  "without humidity": [
+   98.23,
+   0.66
+  ],
+  "without ph": [
+   99.18,
+   0.25
+  ],
+  "without rainfall": [
+   96.68,
+   0.72
+  ]
+ },
+ "timing": {
+  "Random Forest": [
+   257.9,
+   10.0
+  ],
+  "Decision Tree": [
+   12.2,
+   1.2
+  ],
+  "KNN (k=5)": [
+   7.8,
+   5.8
+  ],
+  "SVM (RBF)": [
+   29.4,
+   27.8
+  ],
+  "Logistic Regression": [
+   52.0,
+   1.3
+  ],
+  "MLP (64,32)": [
+   2320.8,
+   1.9
+  ],
+  "Hist. Gradient Boosting": [
+   3072.2,
+   34.1
+  ]
+ }
+}

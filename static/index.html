@@ -278,10 +278,6 @@
           <i data-lucide="satellite" class="w-4 h-4"></i>
           <span>Satellite &amp; Climate</span>
         </button>
-        <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="nav-btn px-3.5 py-2 text-xs font-semibold rounded-lg text-almond/80 hover:text-white hover:bg-roast/60 transition-all flex items-center space-x-1.5">
-          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-          <span>Model Performance & Metrics</span>
-        </button>
         <button onclick="switchTab('report')" id="tab-btn-report" class="nav-btn px-3.5 py-2 text-xs font-semibold rounded-lg text-almond/80 hover:text-white hover:bg-roast/60 transition-all flex items-center space-x-1.5">
           <i data-lucide="file-text" class="w-4 h-4"></i>
           <span>Soil Health & Farm Report</span>
@@ -306,7 +302,6 @@
       <button onclick="switchTab('crop')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg bg-almond text-eclipse font-bold">Crop</button>
       <button onclick="switchTab('fertilizer')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg text-almond/80">Fertilizer</button>
       <button onclick="switchTab('geo')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg text-almond/80">Satellite</button>
-      <button onclick="switchTab('analytics')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg text-almond/80">Metrics &amp; EDA</button>
       <button onclick="switchTab('report')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg text-almond/80">Soil Report</button>
       <button onclick="switchTab('data')" class="px-3 py-1.5 text-xs whitespace-nowrap rounded-lg text-almond/80">Data Explorer</button>
     </div>
@@ -324,7 +319,7 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-pine text-emerald-vibrant border border-emerald-vibrant/40">Dataset 1 • Kaggle Crop Recommendation</span>
-            <span class="text-xs text-mint/80 font-mono">200 Samples • 10 Target Crops</span>
+            <span class="text-xs text-mint/80 font-mono">2,200 Samples • 22 Target Crops</span>
           </div>
           <h2 class="font-sans text-3xl font-extrabold text-white mt-1">Smart Crop Recommendation Engine</h2>
           <p class="text-sm text-mint/80">Multi-parameter soil and climate profiling for maximum agronomic yield.</p>
@@ -847,7 +842,7 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-pine text-emerald-vibrant border border-emerald-vibrant/40">Dataset 2 • Kaggle Fertilizer Prediction</span>
-            <span class="text-xs text-mint/80 font-mono">200 Samples • 7 Fertilizer Formulations</span>
+            <span class="text-xs text-mint/80 font-mono">100,000 Samples • 7 Fertilizer Formulations</span>
           </div>
           <h2 class="font-sans text-3xl font-extrabold text-white mt-1">Smart Fertilizer Optimization Engine</h2>
           <p class="text-sm text-mint/80">Targeted soil chemical balance and crop nutrient supplementation.</p>
@@ -902,17 +897,8 @@
                 </div>
 
                 <div>
-                  <label for="fert-crop-type" class="block text-xs font-bold text-mint mb-1.5">Crop Cultivated</label>
-                  <select id="fert-crop-type" onchange="debouncedFertPredict()" class="w-full bg-pine text-sm text-white border border-pine-border rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-vibrant">
-                    <option value="Cotton">Cotton</option>
-                    <option value="Sugarcane" selected>Sugarcane</option>
-                    <option value="Millets">Millets</option>
-                    <option value="Barley">Barley</option>
-                    <option value="Wheat">Wheat</option>
-                    <option value="Paddy">Paddy / Rice</option>
-                    <option value="Maize">Maize</option>
-                    <option value="Tobacco">Tobacco</option>
-                  </select>
+                  <label for="fert-crop-type" class="block text-xs font-bold text-mint mb-1.5">Crop (from Crop Predictor)</label>
+                  <input id="fert-crop-type" readonly value="Rice" class="w-full bg-pine text-sm text-white border border-pine-border rounded-xl px-3.5 py-2.5 cursor-not-allowed opacity-90">
                 </div>
               </div>
 
@@ -935,22 +921,22 @@
                     <div class="flex justify-between items-center text-xs mb-1.5">
                       <span class="font-semibold text-mint">Temp</span>
                       <div class="flex items-center space-x-1">
-                        <input type="number" id="fert-num-Temperature" min="15" max="42" value="28" oninput="syncFertInput('Temperature', this.value)" class="w-14 bg-pine text-apple font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-apple/40 text-right focus:outline-none focus:border-apple">
+                        <input type="number" id="fert-num-Temperature" min="10" max="45" value="28" oninput="syncFertInput('Temperature', this.value)" class="w-14 bg-pine text-apple font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-apple/40 text-right focus:outline-none focus:border-apple">
                         <span class="text-[10px] text-mint/60">°C</span>
                       </div>
                     </div>
-                    <input type="range" id="fert-in-Temperature" min="15" max="42" value="28" oninput="syncFertSlider('Temperature', this.value)" class="w-full slider-apple">
+                    <input type="range" id="fert-in-Temperature" min="10" max="45" value="28" oninput="syncFertSlider('Temperature', this.value)" class="w-full slider-apple">
                   </div>
 
                   <div class="bg-pine/50 p-3.5 rounded-xl border border-pine-border hover:border-emerald-vibrant/40 transition-colors">
                     <div class="flex justify-between items-center text-xs mb-1.5">
                       <span class="font-semibold text-mint">Humidity</span>
                       <div class="flex items-center space-x-1">
-                        <input type="number" id="fert-num-Humidity" min="20" max="80" value="60" oninput="syncFertInput('Humidity', this.value)" class="w-14 bg-pine text-emerald-vibrant font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-emerald-vibrant/40 text-right focus:outline-none focus:border-emerald-vibrant">
+                        <input type="number" id="fert-num-Humidity" min="15" max="100" value="60" oninput="syncFertInput('Humidity', this.value)" class="w-14 bg-pine text-emerald-vibrant font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-emerald-vibrant/40 text-right focus:outline-none focus:border-emerald-vibrant">
                         <span class="text-[10px] text-mint/60">%</span>
                       </div>
                     </div>
-                    <input type="range" id="fert-in-Humidity" min="20" max="80" value="60" oninput="syncFertSlider('Humidity', this.value)" class="w-full">
+                    <input type="range" id="fert-in-Humidity" min="15" max="100" value="60" oninput="syncFertSlider('Humidity', this.value)" class="w-full">
                   </div>
                 </div>
               </div>
@@ -963,33 +949,33 @@
                     <div class="flex justify-between items-center text-xs mb-1.5">
                       <span class="font-semibold text-mint">Nitrogen</span>
                       <div class="flex items-center space-x-1">
-                        <input type="number" id="fert-num-Nitrogen" min="0" max="50" value="22" oninput="syncFertInput('Nitrogen', this.value)" class="w-14 bg-pine text-emerald-vibrant font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-emerald-vibrant/40 text-right focus:outline-none focus:border-emerald-vibrant">
+                        <input type="number" id="fert-num-Nitrogen" min="0" max="140" value="22" oninput="syncFertInput('Nitrogen', this.value)" class="w-14 bg-pine text-emerald-vibrant font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-emerald-vibrant/40 text-right focus:outline-none focus:border-emerald-vibrant">
                         <span class="text-[10px] text-mint/60">ppm</span>
                       </div>
                     </div>
-                    <input type="range" id="fert-in-Nitrogen" min="0" max="50" value="22" oninput="syncFertSlider('Nitrogen', this.value)" class="w-full">
+                    <input type="range" id="fert-in-Nitrogen" min="0" max="140" value="22" oninput="syncFertSlider('Nitrogen', this.value)" class="w-full">
                   </div>
 
                   <div class="bg-pine/50 p-3.5 rounded-xl border border-pine-border hover:border-apple/40 transition-colors">
                     <div class="flex justify-between items-center text-xs mb-1.5">
                       <span class="font-semibold text-mint">Phosphorus</span>
                       <div class="flex items-center space-x-1">
-                        <input type="number" id="fert-num-Phosphorous" min="0" max="50" value="18" oninput="syncFertInput('Phosphorous', this.value)" class="w-14 bg-pine text-apple font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-apple/40 text-right focus:outline-none focus:border-apple">
+                        <input type="number" id="fert-num-Phosphorous" min="0" max="145" value="18" oninput="syncFertInput('Phosphorous', this.value)" class="w-14 bg-pine text-apple font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-apple/40 text-right focus:outline-none focus:border-apple">
                         <span class="text-[10px] text-mint/60">ppm</span>
                       </div>
                     </div>
-                    <input type="range" id="fert-in-Phosphorous" min="0" max="50" value="18" oninput="syncFertSlider('Phosphorous', this.value)" class="w-full slider-apple">
+                    <input type="range" id="fert-in-Phosphorous" min="0" max="145" value="18" oninput="syncFertSlider('Phosphorous', this.value)" class="w-full slider-apple">
                   </div>
 
                   <div class="bg-pine/50 p-3.5 rounded-xl border border-pine-border hover:border-mint/40 transition-colors">
                     <div class="flex justify-between items-center text-xs mb-1.5">
                       <span class="font-semibold text-mint">Potassium</span>
                       <div class="flex items-center space-x-1">
-                        <input type="number" id="fert-num-Potassium" min="0" max="50" value="14" oninput="syncFertInput('Potassium', this.value)" class="w-14 bg-pine text-mint font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-mint/40 text-right focus:outline-none focus:border-mint">
+                        <input type="number" id="fert-num-Potassium" min="0" max="205" value="14" oninput="syncFertInput('Potassium', this.value)" class="w-14 bg-pine text-mint font-mono font-bold text-xs px-1.5 py-0.5 rounded border border-mint/40 text-right focus:outline-none focus:border-mint">
                         <span class="text-[10px] text-mint/60">ppm</span>
                       </div>
                     </div>
-                    <input type="range" id="fert-in-Potassium" min="0" max="50" value="14" oninput="syncFertSlider('Potassium', this.value)" class="w-full slider-mint">
+                    <input type="range" id="fert-in-Potassium" min="0" max="205" value="14" oninput="syncFertSlider('Potassium', this.value)" class="w-full slider-mint">
                   </div>
                 </div>
               </div>
@@ -1585,308 +1571,23 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- TAB 3: EDA & ANALYTICS GALLERY -->
-    <!-- ============================================================ -->
-    <section id="view-analytics" class="tab-view hidden space-y-8">
-      <div>
-        <div class="flex items-center space-x-2">
-          <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-pine text-emerald-vibrant border border-emerald-vibrant/40">Statistical Visualizations</span>
-          <span class="text-xs text-mint font-mono">16 Pre-computed Analytical Charts</span>
-        </div>
-        <h2 class="font-sans text-3xl font-extrabold text-white mt-1">Exploratory Data Analysis & Model Metrics</h2>
-        <p class="text-sm text-mint/80">Distribution analysis, feature correlation heatmaps, confusion matrices, and feature importance rankings.</p>
-      </div>
-
-      <!-- Dataset Filter Buttons -->
-      <div class="flex items-center space-x-2 border-b border-pine-border pb-4">
-        <button onclick="filterGallery('crop')" id="gallery-filter-crop" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-vibrant text-nearblack transition-colors shadow-emerald-glow">
-          🌾 Crop Recommendation Charts (8)
-        </button>
-        <button onclick="filterGallery('fert')" id="gallery-filter-fert" class="px-4 py-2 text-xs font-bold rounded-lg bg-pine hover:bg-pine-elevated text-mint transition-colors">
-          🧪 Fertilizer Prediction Charts (8)
-        </button>
-      </div>
-
-      <!-- Gallery Grid -->
-      <div id="charts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Crop Charts -->
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/01_class_distribution.png', 'Crop Class Distribution')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/01_class_distribution.png" alt="Crop Class Distribution" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">01. Crop Class Distribution</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Sample count across all 10 agricultural target classes.</p>
-        </div>
-
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/02_correlation_heatmap.png', 'Feature Correlation Heatmap')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/02_correlation_heatmap.png" alt="Correlation Heatmap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">02. Feature Correlation Heatmap</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Pearson correlation between N, P, K, pH, rainfall, and climate.</p>
-        </div>
-
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/03_feature_distributions.png', 'Feature Distributions')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/03_feature_distributions.png" alt="Feature Distributions" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">03. Feature Distributions & KDE</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Histograms and Gaussian kernel density estimates.</p>
-        </div>
-
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/06_accuracy_comparison.png', 'Model Accuracy Comparison')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/06_accuracy_comparison.png" alt="Accuracy Comparison" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">04. Model Accuracy Comparison</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Benchmark bar chart: Random Forest vs Decision Tree vs KNN.</p>
-        </div>
-
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/05_confusion_matrix_random_forest.png', 'Confusion Matrix - Random Forest')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/05_confusion_matrix_random_forest.png" alt="Confusion Matrix Random Forest" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">05. Confusion Matrix (Random Forest)</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Class-by-class true vs predicted classification heatmap.</p>
-        </div>
-
-        <div class="gallery-item gallery-crop glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/crop/07_feature_importance.png', 'Feature Importance')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/crop/07_feature_importance.png" alt="Feature Importance" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">06. Feature Importance Ranking</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Gini impurity reduction across decision trees.</p>
-        </div>
-
-        <!-- Fertilizer Charts -->
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/01_class_distribution.png', 'Fertilizer Class Distribution')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/01_class_distribution.png" alt="Fertilizer Class Distribution" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">01. Fertilizer Class Distribution</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Distribution across Urea, DAP, 14-35-14, 28-28, etc.</p>
-        </div>
-
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/02_soil_type_distribution.png', 'Soil Type Distribution')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/02_soil_type_distribution.png" alt="Soil Type Distribution" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">02. Soil Type Distribution</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Sample frequencies for Clayey, Sandy, Loamy, Black, Red soils.</p>
-        </div>
-
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/03_crop_type_distribution.png', 'Crop Type Distribution')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/03_crop_type_distribution.png" alt="Crop Type Distribution" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">03. Crop Type Distribution</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Crops represented: Sugarcane, Cotton, Paddy, Wheat, Maize, etc.</p>
-        </div>
-
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/05_correlation_heatmap.png', 'Fertilizer Correlation Heatmap')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/05_correlation_heatmap.png" alt="Fertilizer Correlation Heatmap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">04. Chemical Correlation Heatmap</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Correlations between Nitrogen, Potassium, Phosphorous & Moisture.</p>
-        </div>
-
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/07_accuracy_comparison.png', 'Fertilizer Accuracy Comparison')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/07_accuracy_comparison.png" alt="Fertilizer Accuracy Comparison" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">05. Multi-Model Accuracy Comparison</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Comparative accuracy across Random Forest, Decision Tree, and KNN.</p>
-        </div>
-
-        <div class="gallery-item gallery-fert hidden glass-panel rounded-xl p-3 hover:border-emerald-vibrant transition-all cursor-pointer group" onclick="openLightbox('/charts/fertilizer/08_feature_importance.png', 'Fertilizer Feature Importance')">
-          <div class="h-44 rounded-lg overflow-hidden bg-nearblack mb-2 relative border border-pine-border">
-            <img src="/charts/fertilizer/08_feature_importance.png" alt="Fertilizer Feature Importance" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono bg-nearblack/90 backdrop-blur rounded text-mint font-bold">Zoom</span>
-          </div>
-          <h4 class="text-sm font-bold text-white">06. Feature Importance Breakdown</h4>
-          <p class="text-xs text-mint/80 mt-0.5">Predictive contribution of soil nutrients and categorical types.</p>
-        </div>
-      </div>
-
-      <!-- Multi-Model Evaluation & Metric Comparison Table (Merged & Enhanced) -->
-      <div class="glass-panel rounded-2xl p-6 mt-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-pine-border">
-          <div class="flex items-center space-x-2">
-            <i data-lucide="award" class="w-5 h-5 text-emerald-vibrant"></i>
-            <h3 class="font-sans font-bold text-lg text-white">Multi-Model Performance Benchmarks</h3>
-          </div>
-          <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-pine text-mint border border-emerald-vibrant/30">80/20 Stratified Split • 100 Trees Ensemble</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-pine text-mint uppercase font-mono text-[10px] border-b border-pine-border">
-              <tr>
-                <th class="py-3 px-4">Dataset</th>
-                <th class="py-3 px-4">Algorithm</th>
-                <th class="py-3 px-4">Accuracy</th>
-                <th class="py-3 px-4">Precision</th>
-                <th class="py-3 px-4">Recall</th>
-                <th class="py-3 px-4">F1-Score</th>
-                <th class="py-3 px-4">Verdict</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-pine-border text-mint">
-              <tr class="hover:bg-pine/40 transition-colors">
-                <td class="py-3 px-4 font-bold text-emerald-vibrant">Crop Recommendation</td>
-                <td class="py-3 px-4 font-bold text-white flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-vibrant"></span>
-                  <span>Random Forest (100 Trees)</span>
-                </td>
-                <td class="py-3 px-4 font-mono text-emerald-vibrant font-bold">99.32%</td>
-                <td class="py-3 px-4 font-mono text-emerald-vibrant">99.40%</td>
-                <td class="py-3 px-4 font-mono text-emerald-vibrant">99.32%</td>
-                <td class="py-3 px-4 font-mono text-emerald-vibrant font-bold">99.31%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-emerald-vibrant border border-emerald-vibrant/40 text-[10px] font-mono font-bold">RECOMMENDED</span></td>
-              </tr>
-              <tr class="hover:bg-pine/40 transition-colors">
-                <td class="py-3 px-4 font-bold text-emerald-vibrant">Crop Recommendation</td>
-                <td class="py-3 px-4 text-white">Decision Tree (CART)</td>
-                <td class="py-3 px-4 font-mono text-mint">98.18%</td>
-                <td class="py-3 px-4 font-mono text-mint">98.25%</td>
-                <td class="py-3 px-4 font-mono text-mint">98.18%</td>
-                <td class="py-3 px-4 font-mono text-mint">98.15%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-mint border border-mint/30 text-[10px] font-mono">EMBEDDABLE</span></td>
-              </tr>
-              <tr class="hover:bg-pine/40 transition-colors">
-                <td class="py-3 px-4 font-bold text-emerald-vibrant">Crop Recommendation</td>
-                <td class="py-3 px-4 text-white">K-Nearest Neighbors (k=5)</td>
-                <td class="py-3 px-4 font-mono text-mint/70">97.50%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">97.62%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">97.50%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">97.48%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-mint/70 border border-mint/20 text-[10px] font-mono">BASELINE</span></td>
-              </tr>
-              <tr class="bg-pine/30 hover:bg-pine/50 transition-colors">
-                <td class="py-3 px-4 font-bold text-apple">Fertilizer Prediction</td>
-                <td class="py-3 px-4 font-bold text-white flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-apple"></span>
-                  <span>Random Forest (100 Trees)</span>
-                </td>
-                <td class="py-3 px-4 font-mono text-apple font-bold">98.00%</td>
-                <td class="py-3 px-4 font-mono text-apple">98.10%</td>
-                <td class="py-3 px-4 font-mono text-apple">98.00%</td>
-                <td class="py-3 px-4 font-mono text-apple font-bold">97.95%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-apple border border-apple/40 text-[10px] font-mono font-bold">RECOMMENDED</span></td>
-              </tr>
-              <tr class="hover:bg-pine/40 transition-colors">
-                <td class="py-3 px-4 font-bold text-apple">Fertilizer Prediction</td>
-                <td class="py-3 px-4 text-white">Decision Tree (CART)</td>
-                <td class="py-3 px-4 font-mono text-mint">95.00%</td>
-                <td class="py-3 px-4 font-mono text-mint">95.20%</td>
-                <td class="py-3 px-4 font-mono text-mint">95.00%</td>
-                <td class="py-3 px-4 font-mono text-mint">94.90%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-mint border border-mint/30 text-[10px] font-mono">FAST RULES</span></td>
-              </tr>
-              <tr class="hover:bg-pine/40 transition-colors">
-                <td class="py-3 px-4 font-bold text-apple">Fertilizer Prediction</td>
-                <td class="py-3 px-4 text-white">K-Nearest Neighbors (k=5)</td>
-                <td class="py-3 px-4 font-mono text-mint/70">88.50%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">89.00%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">88.50%</td>
-                <td class="py-3 px-4 font-mono text-mint/70">88.20%</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded bg-pine text-mint/70 border border-mint/20 text-[10px] font-mono">DISTANCE</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Top Viva Questions & Answers Accordion -->
-      <div class="glass-panel rounded-2xl p-6 space-y-4">
-        <h3 class="font-sans font-bold text-lg text-white flex items-center space-x-2">
-          <i data-lucide="help-circle" class="w-5 h-5 text-emerald-vibrant"></i>
-          <span>Frequently Asked Teacher / Viva Defense Questions</span>
-        </h3>
-
-        <div class="space-y-3 text-xs">
-          <details class="bg-pine/80 rounded-xl p-4 border border-pine-border cursor-pointer group" open>
-            <summary class="font-bold text-white group-hover:text-emerald-vibrant flex items-center justify-between">
-              <span>Q1: Why did you choose Random Forest over a single Decision Tree or Logistic Regression?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-mint group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="text-mint/90 mt-2.5 pl-2 border-l-2 border-emerald-vibrant leading-relaxed">
-              Single Decision Trees suffer from high variance and easily overfit small datasets. Random Forest trains an ensemble of 100 decorrelated decision trees using bootstrap aggregating (bagging) and random subspace feature sampling, significantly reducing generalization error and preventing overfitting on complex NPK soil interactions.
-            </p>
-          </details>
-
-          <details class="bg-pine/80 rounded-xl p-4 border border-pine-border cursor-pointer group">
-            <summary class="font-bold text-white group-hover:text-emerald-vibrant flex items-center justify-between">
-              <span>Q2: How did you preprocess categorical features (Soil Type, Crop Type) in the Fertilizer dataset?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-mint group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="text-mint/90 mt-2.5 pl-2 border-l-2 border-emerald-vibrant leading-relaxed">
-              We utilized scikit-learn's <code class="text-emerald-vibrant bg-nearblack px-1 rounded">LabelEncoder</code> to encode categorical labels into integer representations. In tree models, label encoding effectively bifurcates categorical branch splits without expanding the sparse dimensionality of the dataset.
-            </p>
-          </details>
-
-          <details class="bg-pine/80 rounded-xl p-4 border border-pine-border cursor-pointer group">
-            <summary class="font-bold text-white group-hover:text-emerald-vibrant flex items-center justify-between">
-              <span>Q3: How did you prevent Data Leakage during feature scaling?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-mint group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="text-mint/90 mt-2.5 pl-2 border-l-2 border-emerald-vibrant leading-relaxed">
-              We strictly applied <code class="text-emerald-vibrant bg-nearblack px-1 rounded">StandardScaler.fit_transform()</code> only to the 80% training partition (<code class="text-mint">X_train</code>). The test partition and all incoming live inference inputs are transformed using <code class="text-emerald-vibrant bg-nearblack px-1 rounded">scaler.transform()</code>, ensuring test distributions are completely unseen during normalization.
-            </p>
-          </details>
-
-          <details class="bg-pine/80 rounded-xl p-4 border border-pine-border cursor-pointer group">
-            <summary class="font-bold text-white group-hover:text-emerald-vibrant flex items-center justify-between">
-              <span>Q4: What features exhibited the highest predictive importance for crop selection?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-mint group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="text-mint/90 mt-2.5 pl-2 border-l-2 border-emerald-vibrant leading-relaxed">
-              Based on the Gini feature importance chart (<code class="text-mint">07_feature_importance.png</code>), <strong>Rainfall</strong> and <strong>Humidity</strong> are the most dominant split criteria, followed by Potassium (K) and Nitrogen (N). This matches agronomic biology: precipitation and moisture govern plant survival and transpiration.
-            </p>
-          </details>
-
-          <details class="bg-pine/80 rounded-xl p-4 border border-pine-border cursor-pointer group">
-            <summary class="font-bold text-white group-hover:text-emerald-vibrant flex items-center justify-between">
-              <span>Q5: How can this system be validated in real field conditions before large-scale adoption?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-mint group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="text-mint/90 mt-2.5 pl-2 border-l-2 border-emerald-vibrant leading-relaxed">
-              Using Fisher's Principles of Agronomic Experimentation, we conduct a <strong>Randomized Complete Block Design (RCBD)</strong> field trial. We block across natural soil fertility gradients to isolate environmental noise, randomize treatments against conventional farmer practice across at least 5 independent plots per condition, and measure final crop yield.
-            </p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================ -->
     <!-- TAB 4: SOIL HEALTH CARD & SMART FARM REPORT -->
     <!-- ============================================================ -->
     <section id="view-report" class="tab-view hidden space-y-8">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2">
-            <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-pine text-emerald-vibrant border border-emerald-vibrant/40">Official Deliverable</span>
-            <span class="text-xs text-mint font-mono">Standard Agricultural Soil Health Format</span>
+            <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-pine text-emerald-vibrant border border-emerald-vibrant/40">Prototype Advisory</span>
+            <span class="text-xs text-mint font-mono">Soil Health Card style layout (not an official card)</span>
           </div>
           <h2 class="font-sans text-3xl font-extrabold text-white mt-1">Soil Health Card &amp; Farm Advisory Report</h2>
           <p class="text-sm text-mint/80">Diagnostic soil nutrient audit, crop feasibility analysis, and customized fertilization schedule.</p>
         </div>
 
         <div class="flex items-center space-x-2">
-          <button onclick="syncSoilReport()" class="px-3.5 py-2 text-xs font-bold rounded-lg bg-pine hover:bg-pine-elevated text-mint border border-emerald-vibrant/30 transition-colors flex items-center space-x-1.5 shadow-sm">
+          <button id="shc-sync-btn" onclick="syncSoilReportLive()" class="px-3.5 py-2 text-xs font-bold rounded-lg bg-pine hover:bg-pine-elevated text-mint border border-emerald-vibrant/30 transition-colors flex items-center space-x-1.5 shadow-sm">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-vibrant"></i>
-            <span>Sync Live Inputs</span>
+            <span id="shc-sync-label">Sync Live Inputs</span>
           </button>
           <button onclick="window.print()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-vibrant hover:bg-emerald-hover text-nearblack transition-colors flex items-center space-x-1.5 shadow-emerald-glow">
             <i data-lucide="printer" class="w-4 h-4"></i>
@@ -1904,15 +1605,15 @@
               🌱
             </div>
             <div>
-              <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-vibrant font-bold">Government / AgTech Precision Testing</span>
-              <h3 class="font-sans text-2xl font-black text-white">SOIL HEALTH ASSESSMENT REPORT</h3>
+              <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-vibrant font-bold">AgTech Decision Support • ML Estimate</span>
+              <h3 class="font-sans text-2xl font-black text-white">SOIL HEALTH ADVISORY REPORT</h3>
               <p class="text-xs text-mint/80">Integrated Precision Agriculture Machine Learning Decision Support System</p>
             </div>
           </div>
           <div class="text-right font-mono text-xs text-mint/80">
-            <div>Report ID: <span id="shc-report-id" class="font-bold text-emerald-vibrant">SHC-2026-9842</span></div>
+            <div>Report ID: <span id="shc-report-id" class="font-bold text-emerald-vibrant">DEMO</span></div>
             <div>Date of Testing: <span id="shc-report-date" class="font-bold text-white">Today</span></div>
-            <div>Status: <span class="px-2 py-0.5 rounded bg-pine text-emerald-vibrant border border-emerald-vibrant/40 text-[10px] font-bold">CERTIFIED</span></div>
+            <div>Status: <span class="px-2 py-0.5 rounded bg-pine text-emerald-vibrant border border-emerald-vibrant/40 text-[10px] font-bold">ESTIMATE</span></div>
           </div>
         </div>
 
@@ -2036,7 +1737,7 @@
         <!-- Official Signoff Footer -->
         <div class="pt-6 border-t border-pine-border flex flex-col sm:flex-row justify-between items-center text-xs text-mint/60 gap-3 font-mono">
           <div>Verified By: ML Decision Engine (Random Forest Multi-Model Ensemble)</div>
-          <div class="text-right">Digital Agronomist System • Project Review I Certification</div>
+          <div class="text-right">Digital Agronomist System • Student prototype: advisory only, not a government or laboratory certificate</div>
         </div>
       </div>
     </section>
@@ -2063,7 +1764,7 @@
           </button>
           <button onclick="switchDatasetView('fertilizer')" id="dset-btn-fert" class="px-3.5 py-2 text-xs font-semibold rounded-lg text-mint/80 hover:text-white transition-all flex items-center space-x-1.5">
             <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
-            <span>Fertilizer Dataset (200)</span>
+            <span>Fertilizer Dataset (100,000)</span>
           </button>
         </div>
       </div>
@@ -2147,7 +1848,7 @@
   </footer>
 
   <!-- App Script -->
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/app.js?v=14"></script>
   <script>
     // Initialize Lucide icons on DOM load
     document.addEventListener('DOMContentLoaded', () => {

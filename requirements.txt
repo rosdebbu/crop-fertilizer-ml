@@ -3,3 +3,9 @@ numpy
 scikit-learn
 matplotlib
 seaborn
+fastapi
+uvicorn
+pydantic
+httpx
+pytest
+joblib

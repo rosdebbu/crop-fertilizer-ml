@@ -134,17 +134,14 @@ print("=" * 60)
 
 # Label-encode categorical columns
 le_soil = LabelEncoder()
-le_crop = LabelEncoder()
 
 df["Soil Type_encoded"] = le_soil.fit_transform(df["Soil Type"])
-df["Crop Type_encoded"] = le_crop.fit_transform(df["Crop Type"])
 
 print(f"  Soil Type mapping: {dict(zip(le_soil.classes_, le_soil.transform(le_soil.classes_)))}")
-print(f"  Crop Type mapping: {dict(zip(le_crop.classes_, le_crop.transform(le_crop.classes_)))}")
 
 # Define features (use encoded categorical + numeric)
 feature_cols = ["Temperature", "Humidity", "Moisture", "Soil Type_encoded",
-                "Crop Type_encoded", "Nitrogen", "Phosphorous", "Potassium"]
+                "Nitrogen", "Phosphorous", "Potassium"]
 
 # Filter to only existing columns
 feature_cols = [c for c in feature_cols if c in df.columns]

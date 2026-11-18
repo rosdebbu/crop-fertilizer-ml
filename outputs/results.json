@@ -1,0 +1,192 @@
+{
+ "metrics": {
+  "crop": {
+   "Random Forest": {
+    "accuracy": 99.55,
+    "precision": 99.57,
+    "recall": 99.55,
+    "f1_score": 99.55,
+    "cv_accuracy": 99.5
+   },
+   "Decision Tree": {
+    "accuracy": 97.95,
+    "precision": 98.06,
+    "recall": 97.95,
+    "f1_score": 97.94,
+    "cv_accuracy": 98.68
+   },
+   "KNN": {
+    "accuracy": 97.95,
+    "precision": 98.04,
+    "recall": 97.95,
+    "f1_score": 97.93,
+    "cv_accuracy": 97.14
+   }
+  },
+  "fertilizer": {
+   "Random Forest": {
+    "accuracy": 14.54,
+    "precision": 14.54,
+    "recall": 14.54,
+    "f1_score": 14.51
+   },
+   "Decision Tree": {
+    "accuracy": 14.69,
+    "precision": 14.68,
+    "recall": 14.69,
+    "f1_score": 14.68
+   },
+   "KNN": {
+    "accuracy": 14.21,
+    "precision": 14.23,
+    "recall": 14.21,
+    "f1_score": 13.8
+   }
+  }
+ },
+ "data_quality": {
+  "crop": {
+   "chance_level_pct": 4.55,
+   "best_accuracy_pct": 99.55,
+   "warning": null
+  },
+  "fertilizer": {
+   "chance_level_pct": 14.29,
+   "best_accuracy_pct": 14.69,
+   "warning": "Best accuracy 14.69% is at chance level (14.29%): the dataset labels are not predictable from the features, so predictions are not reliable."
+  }
+ },
+ "synthetic_fertilizer": {
+  "metrics": {
+   "Random Forest": {
+    "accuracy": 94.8,
+    "precision": 94.86,
+    "recall": 94.8,
+    "f1_score": 94.72,
+    "cv_accuracy": 95.84
+   },
+   "Decision Tree": {
+    "accuracy": 90.4,
+    "precision": 90.48,
+    "recall": 90.4,
+    "f1_score": 90.4,
+    "cv_accuracy": 90.24
+   },
+   "KNN": {
+    "accuracy": 80.2,
+    "precision": 79.79,
+    "recall": 80.2,
+    "f1_score": 79.71,
+    "cv_accuracy": 80.08
+   }
+  },
+  "quality": {
+   "chance_level_pct": 14.29,
+   "best_accuracy_pct": 94.8,
+   "warning": null
+  }
+ },
+ "sample_crop_prediction": {
+  "success": true,
+  "crop": "rice",
+  "confidence": 94.0,
+  "model_used": "Random Forest",
+  "probabilities": {
+   "rice": 94.0,
+   "jute": 6.0,
+   "pomegranate": 0.0,
+   "pigeonpeas": 0.0,
+   "papaya": 0.0,
+   "watermelon": 0.0,
+   "orange": 0.0,
+   "muskmelon": 0.0,
+   "mothbeans": 0.0,
+   "mungbean": 0.0,
+   "mango": 0.0,
+   "maize": 0.0,
+   "lentil": 0.0,
+   "kidneybeans": 0.0,
+   "grapes": 0.0,
+   "cotton": 0.0,
+   "coffee": 0.0,
+   "coconut": 0.0,
+   "chickpea": 0.0,
+   "blackgram": 0.0,
+   "banana": 0.0,
+   "apple": 0.0
+  },
+  "multi_model_comparison": {
+   "Random Forest": {
+    "predicted_crop": "rice",
+    "confidence": 94.0,
+    "overall_accuracy": 99.55
+   },
+   "Decision Tree": {
+    "predicted_crop": "rice",
+    "confidence": 100.0,
+    "overall_accuracy": 97.95
+   },
+   "KNN": {
+    "predicted_crop": "rice",
+    "confidence": 100.0,
+    "overall_accuracy": 97.95
+   }
+  },
+  "metadata": {
+   "title": "Rice (Oryza sativa)",
+   "icon": "\ud83c\udf3e",
+   "category": "Kharif Cereal",
+   "description": "Thrives in high rainfall, heavy clayey soils, and warm humid climates.",
+   "growing_season": "June - November (Monsoon)",
+   "ideal_conditions": "High N (60-90), Rainfall >180mm, High humidity (80%+), pH 5.5-7.0",
+   "economic_value": "Primary staple crop in Asia, high commercial and subsistence value."
+  },
+  "scientific_rationale": [
+   "High precipitation (236.0 mm) strongly favors water-intensive crops like rice.",
+   "Abundant soil nitrogen (80 ppm) supports the vigorous vegetative demands of rice."
+  ]
+ },
+ "sample_fertilizer_prediction": {
+  "success": true,
+  "fertilizer": "28-28",
+  "confidence": 29.0,
+  "model_used": "Random Forest",
+  "probabilities": {
+   "28-28": 29.0,
+   "20-20": 25.0,
+   "17-17-17": 11.0,
+   "DAP": 10.0,
+   "Urea": 10.0,
+   "14-35-14": 10.0,
+   "10-26-26": 5.0
+  },
+  "multi_model_comparison": {
+   "Random Forest": {
+    "predicted_fertilizer": "28-28",
+    "confidence": 29.0,
+    "overall_accuracy": 14.54
+   },
+   "Decision Tree": {
+    "predicted_fertilizer": "14-35-14",
+    "confidence": 100.0,
+    "overall_accuracy": 14.69
+   },
+   "KNN": {
+    "predicted_fertilizer": "20-20",
+    "confidence": 40.0,
+    "overall_accuracy": 14.21
+   }
+  },
+  "metadata": {
+   "formula": "Nitro-Phosphate Complex",
+   "npk": "28 - 28 - 0",
+   "primary_nutrient": "Equal Nitrogen & Phosphorus",
+   "description": "High-potency dual nutrient formulation designed for vegetative spurt and energetic root vigor.",
+   "usage_advice": "Suitable for sugarcane, paddy, and cotton during early tillering and vegetative branching."
+  },
+  "diagnostics": [
+   "Critically low Nitrogen (5 ppm): Requires high-N corrective application."
+  ],
+  "model_reliability_warning": "Best accuracy 14.69% is at chance level (14.29%): the dataset labels are not predictable from the features, so predictions are not reliable."
+ }
+}

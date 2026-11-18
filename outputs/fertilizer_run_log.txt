@@ -1,0 +1,166 @@
+============================================================
+1. LOADING DATA
+============================================================
+
+Shape: (100000, 9)
+
+Columns: ['Temperature', 'Humidity', 'Moisture', 'Soil Type', 'Crop Type', 'Nitrogen', 'Potassium', 'Phosphorous', 'Fertilizer Name']
+
+First 5 rows:
+   Temperature  Humidity  Moisture  ... Potassium Phosphorous  Fertilizer Name
+0           32        51        41  ...         3          19         14-35-14
+1           35        58        35  ...        14          16             Urea
+2           27        55        43  ...         0          17            20-20
+3           33        56        56  ...         5          24            28-28
+4           32        70        60  ...         6           9         14-35-14
+
+[5 rows x 9 columns]
+
+Data types:
+Temperature        int64
+Humidity           int64
+Moisture           int64
+Soil Type            str
+Crop Type            str
+Nitrogen           int64
+Potassium          int64
+Phosphorous        int64
+Fertilizer Name      str
+dtype: object
+
+Missing values:
+Temperature        0
+Humidity           0
+Moisture           0
+Soil Type          0
+Crop Type          0
+Nitrogen           0
+Potassium          0
+Phosphorous        0
+Fertilizer Name    0
+dtype: int64
+
+Basic statistics:
+         Temperature       Humidity  ...      Potassium   Phosphorous
+count  100000.000000  100000.000000  ...  100000.000000  100000.00000
+mean       31.503300      60.985810  ...       9.472220      21.01348
+std         4.019942       6.651393  ...       5.768565      12.39118
+min        25.000000      50.000000  ...       0.000000       0.00000
+25%        28.000000      55.000000  ...       4.000000      10.00000
+50%        32.000000      61.000000  ...       9.000000      21.00000
+75%        35.000000      67.000000  ...      14.000000      32.00000
+max        38.000000      72.000000  ...      19.000000      42.00000
+
+[8 rows x 6 columns]
+
+Target classes (7): ['10-26-26', '14-35-14', '17-17-17', '20-20', '28-28', 'DAP', 'Urea']
+
+============================================================
+2. EXPLORATORY DATA ANALYSIS
+============================================================
+  [OK] Saved: 01_class_distribution.png
+  [OK] Saved: 02_soil_type_distribution.png
+  [OK] Saved: 03_crop_type_distribution.png
+  [OK] Saved: 04_feature_distributions.png
+  [OK] Saved: 05_correlation_heatmap.png
+
+============================================================
+3. PREPROCESSING
+============================================================
+  Soil Type mapping: {'Black': np.int64(0), 'Clayey': np.int64(1), 'Loamy': np.int64(2), 'Red': np.int64(3), 'Sandy': np.int64(4)}
+
+  Train set: 80000 samples
+  Test set:  20000 samples
+  [OK] Features scaled with StandardScaler
+
+============================================================
+4. TRAINING MODELS
+============================================================
+
+  Training: Random Forest...
+  [OK] Random Forest - Accuracy: 0.1454 (14.54%)
+
+  Training: Decision Tree...
+  [OK] Decision Tree - Accuracy: 0.1469 (14.69%)
+
+  Training: KNN...
+  [OK] KNN - Accuracy: 0.1421 (14.21%)
+
+============================================================
+5. EVALUATION
+============================================================
+
+--------------------------------------------------
+  Random Forest - Accuracy: 0.1454
+--------------------------------------------------
+              precision    recall  f1-score   support
+
+    10-26-26       0.15      0.16      0.15      2876
+    14-35-14       0.15      0.17      0.16      2898
+    17-17-17       0.14      0.14      0.14      2834
+       20-20       0.14      0.13      0.13      2836
+       28-28       0.15      0.14      0.15      2847
+         DAP       0.15      0.14      0.14      2844
+        Urea       0.15      0.13      0.14      2865
+
+    accuracy                           0.15     20000
+   macro avg       0.15      0.15      0.15     20000
+weighted avg       0.15      0.15      0.15     20000
+
+  [OK] Saved: 06_confusion_matrix_random_forest.png
+
+--------------------------------------------------
+  Decision Tree - Accuracy: 0.1469
+--------------------------------------------------
+              precision    recall  f1-score   support
+
+    10-26-26       0.14      0.14      0.14      2876
+    14-35-14       0.16      0.17      0.16      2898
+    17-17-17       0.15      0.15      0.15      2834
+       20-20       0.15      0.15      0.15      2836
+       28-28       0.15      0.14      0.14      2847
+         DAP       0.15      0.15      0.15      2844
+        Urea       0.14      0.14      0.14      2865
+
+    accuracy                           0.15     20000
+   macro avg       0.15      0.15      0.15     20000
+weighted avg       0.15      0.15      0.15     20000
+
+  [OK] Saved: 06_confusion_matrix_decision_tree.png
+
+--------------------------------------------------
+  KNN - Accuracy: 0.1421
+--------------------------------------------------
+              precision    recall  f1-score   support
+
+    10-26-26       0.14      0.26      0.18      2876
+    14-35-14       0.14      0.17      0.15      2898
+    17-17-17       0.14      0.14      0.14      2834
+       20-20       0.13      0.11      0.12      2836
+       28-28       0.14      0.11      0.12      2847
+         DAP       0.15      0.11      0.13      2844
+        Urea       0.14      0.09      0.11      2865
+
+    accuracy                           0.14     20000
+   macro avg       0.14      0.14      0.14     20000
+weighted avg       0.14      0.14      0.14     20000
+
+  [OK] Saved: 06_confusion_matrix_knn.png
+
+  [OK] Saved: 07_accuracy_comparison.png
+  [OK] Saved: 08_feature_importance.png
+
+============================================================
+6. SUMMARY
+============================================================
+
+  Model                  Accuracy
+  --------------------------------
+  Random Forest            0.1454
+  Decision Tree            0.1469
+  KNN                      0.1421
+
+  [*] Best Model: Decision Tree (14.69%)
+
+  All charts saved to: output_charts_fertilizer/
+============================================================

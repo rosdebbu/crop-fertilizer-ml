@@ -1,0 +1,212 @@
+{
+ "crop_cv": {
+  "Random Forest": {
+   "acc_mean": 99.56,
+   "acc_std": 0.29,
+   "f1_macro_mean": 99.56,
+   "f1_macro_std": 0.29
+  },
+  "Decision Tree": {
+   "acc_mean": 98.8,
+   "acc_std": 0.63,
+   "f1_macro_mean": 98.8,
+   "f1_macro_std": 0.63
+  },
+  "KNN (k=5)": {
+   "acc_mean": 97.38,
+   "acc_std": 0.58,
+   "f1_macro_mean": 97.37,
+   "f1_macro_std": 0.58
+  },
+  "SVM (RBF)": {
+   "acc_mean": 98.32,
+   "acc_std": 0.51,
+   "f1_macro_mean": 98.31,
+   "f1_macro_std": 0.52
+  },
+  "Logistic Regression": {
+   "acc_mean": 97.12,
+   "acc_std": 0.54,
+   "f1_macro_mean": 97.1,
+   "f1_macro_std": 0.54
+  },
+  "MLP (64,32)": {
+   "acc_mean": 98.61,
+   "acc_std": 0.41,
+   "f1_macro_mean": 98.6,
+   "f1_macro_std": 0.43
+  },
+  "Hist. Gradient Boosting": {
+   "acc_mean": 99.08,
+   "acc_std": 0.46,
+   "f1_macro_mean": 99.07,
+   "f1_macro_std": 0.46
+  }
+ },
+ "crop_best": "Random Forest",
+ "crop_wilcoxon_vs_best": {
+  "Decision Tree": {
+   "mean_diff_pp": 0.76,
+   "p_value": 0.0034
+  },
+  "KNN (k=5)": {
+   "mean_diff_pp": 2.18,
+   "p_value": 0.0006
+  },
+  "SVM (RBF)": {
+   "mean_diff_pp": 1.24,
+   "p_value": 0.0006
+  },
+  "Logistic Regression": {
+   "mean_diff_pp": 2.44,
+   "p_value": 0.0006
+  },
+  "MLP (64,32)": {
+   "mean_diff_pp": 0.95,
+   "p_value": 0.0006
+  },
+  "Hist. Gradient Boosting": {
+   "mean_diff_pp": 0.48,
+   "p_value": 0.0093
+  }
+ },
+ "noise_levels_fraction_of_std": [
+  0.0,
+  0.1,
+  0.25,
+  0.5,
+  1.0
+ ],
+ "crop_noise_accuracy": {
+  "Random Forest": [
+   99.55,
+   96.52,
+   81.98,
+   57.39,
+   30.34
+  ],
+  "Decision Tree": [
+   97.95,
+   91.05,
+   69.84,
+   44.98,
+   22.27
+  ],
+  "KNN (k=5)": [
+   97.95,
+   97.02,
+   92.25,
+   75.2,
+   43.95
+  ],
+  "SVM (RBF)": [
+   98.41,
+   98.11,
+   92.86,
+   74.09,
+   36.73
+  ],
+  "Logistic Regression": [
+   97.27,
+   96.57,
+   90.02,
+   68.18,
+   36.91
+  ],
+  "MLP (64,32)": [
+   99.09,
+   97.77,
+   88.25,
+   63.86,
+   33.7
+  ],
+  "Hist. Gradient Boosting": [
+   98.86,
+   88.18,
+   69.32,
+   47.02,
+   26.05
+  ]
+ },
+ "fert_rows": 100000,
+ "fert_chance_pct": 14.29,
+ "fert_class_share_pct": {
+  "14-35-14": 14.49,
+  "10-26-26": 14.38,
+  "Urea": 14.32,
+  "28-28": 14.23,
+  "DAP": 14.22,
+  "20-20": 14.18,
+  "17-17-17": 14.17
+ },
+ "fert_feature_means_by_label": {
+  "10-26-26": {
+   "Temperature": 31.49,
+   "Humidity": 60.95,
+   "Moisture": 45.02,
+   "Nitrogen": 23.07,
+   "Phosphorous": 20.97,
+   "Potassium": 9.5
+  },
+  "14-35-14": {
+   "Temperature": 31.53,
+   "Humidity": 60.94,
+   "Moisture": 45.04,
+   "Nitrogen": 22.97,
+   "Phosphorous": 21.25,
+   "Potassium": 9.47
+  },
+  "17-17-17": {
+   "Temperature": 31.47,
+   "Humidity": 60.99,
+   "Moisture": 44.82,
+   "Nitrogen": 23.02,
+   "Phosphorous": 20.99,
+   "Potassium": 9.5
+  },
+  "20-20": {
+   "Temperature": 31.51,
+   "Humidity": 61.06,
+   "Moisture": 45.01,
+   "Nitrogen": 22.97,
+   "Phosphorous": 20.98,
+   "Potassium": 9.53
+  },
+  "28-28": {
+   "Temperature": 31.51,
+   "Humidity": 60.92,
+   "Moisture": 45.16,
+   "Nitrogen": 22.94,
+   "Phosphorous": 20.98,
+   "Potassium": 9.47
+  },
+  "DAP": {
+   "Temperature": 31.5,
+   "Humidity": 61.06,
+   "Moisture": 44.99,
+   "Nitrogen": 23.09,
+   "Phosphorous": 20.94,
+   "Potassium": 9.37
+  },
+  "Urea": {
+   "Temperature": 31.51,
+   "Humidity": 60.99,
+   "Moisture": 44.99,
+   "Nitrogen": 22.85,
+   "Phosphorous": 20.97,
+   "Potassium": 9.46
+  }
+ },
+ "fert_anova_p": {
+  "Temperature": 0.9474,
+  "Humidity": 0.4036,
+  "Moisture": 0.4124,
+  "Nitrogen": 0.6115,
+  "Phosphorous": 0.372,
+  "Potassium": 0.2781
+ },
+ "fert_chi2_p_soil": 0.6107,
+ "fert_mutual_info_max": 0.0087,
+ "fert_rf_cv_real_pct": 14.75,
+ "fert_rf_cv_shuffled_labels_pct": 14.58
+}

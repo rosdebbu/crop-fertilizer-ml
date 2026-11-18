@@ -9,7 +9,7 @@
 // TAB NAVIGATION (5 Core Features)
 // ============================================================
 function switchTab(tabKey) {
-  const tabs = ['crop', 'fertilizer', 'geo', 'analytics', 'report', 'data'];
+  const tabs = ['crop', 'fertilizer', 'geo', 'report', 'data'];
   
   tabs.forEach(t => {
     const view = document.getElementById(`view-${t}`);
@@ -70,27 +70,43 @@ function debouncedFertPredict() {
   }, 120);
 }
 
+// Shared field conditions: N, P, K, temperature and humidity are ONE set of values for both tabs,
+// so the crop result, fertilizer result and soil report always describe the same soil.
+const SOIL_LINK = [['N', 'Nitrogen'], ['P', 'Phosphorous'], ['K', 'Potassium'], ['temperature', 'Temperature'], ['humidity', 'Humidity']];
+function mirrorSoil(from) {
+  SOIL_LINK.forEach(([c, f]) => {
+    const [src, dst] = from === 'crop' ? [['crop', c], ['fert', f]] : [['fert', f], ['crop', c]];
+    const v = document.getElementById(`${src[0]}-num-${src[1]}`)?.value;
+    if (v === undefined || v === '') return;
+    ['num', 'in'].forEach(t => { const e = document.getElementById(`${dst[0]}-${t}-${dst[1]}`); if (e) e.value = v; });
+  });
+}
+
 function syncCropSlider(key, val) {
   const numInput = document.getElementById(`crop-num-${key}`);
   if (numInput) numInput.value = val;
+  mirrorSoil('crop'); debouncedFertPredict();
   debouncedCropPredict();
 }
 
 function syncCropInput(key, val) {
   const slider = document.getElementById(`crop-in-${key}`);
   if (slider) slider.value = val;
+  mirrorSoil('crop'); debouncedFertPredict();
   debouncedCropPredict();
 }
 
 function syncFertSlider(key, val) {
   const numInput = document.getElementById(`fert-num-${key}`);
   if (numInput) numInput.value = val;
+  mirrorSoil('fert'); debouncedCropPredict();
   debouncedFertPredict();
 }
 
 function syncFertInput(key, val) {
   const slider = document.getElementById(`fert-in-${key}`);
   if (slider) slider.value = val;
+  mirrorSoil('fert'); debouncedCropPredict();
   debouncedFertPredict();
 }
 
@@ -101,11 +117,12 @@ let latestFertData = null;
 // ============================================================
 // CROP PRESETS & INFERENCE
 // ============================================================
+// Presets = per-crop averages from the crop dataset (each one is predicted correctly by the model)
 const CROP_PRESETS = {
-  rice: { N: 90, P: 45, K: 40, temperature: 26.0, humidity: 82, ph: 6.5, rainfall: 240 },
-  chickpea: { N: 30, P: 65, K: 45, temperature: 18.5, humidity: 45, ph: 7.2, rainfall: 65 },
-  maize: { N: 75, P: 42, K: 25, temperature: 24.0, humidity: 62, ph: 6.2, rainfall: 95 },
-  mothbeans: { N: 22, P: 40, K: 20, temperature: 31.0, humidity: 35, ph: 7.8, rainfall: 42 }
+  rice: { N: 80, P: 48, K: 40, temperature: 23.7, humidity: 82, ph: 6.4, rainfall: 236 },
+  chickpea: { N: 40, P: 68, K: 80, temperature: 18.9, humidity: 17, ph: 7.3, rainfall: 80 },
+  maize: { N: 78, P: 48, K: 20, temperature: 22.4, humidity: 65, ph: 6.2, rainfall: 85 },
+  mothbeans: { N: 21, P: 48, K: 20, temperature: 28.2, humidity: 53, ph: 6.8, rainfall: 51 }
 };
 
 function loadCropPreset(name) {
@@ -127,6 +144,7 @@ function loadCropPreset(name) {
   setVal('ph', p.ph);
   setVal('rainfall', p.rainfall);
 
+  mirrorSoil('crop'); executeFertPrediction(true);
   executeCropPrediction(false);
 }
 
@@ -164,8 +182,13 @@ async function executeCropPrediction(isSilent = false) {
 
     const data = await res.json();
     if (data.success) {
+      const changed = !latestCropData || latestCropData.crop !== data.crop;
       latestCropData = data;
       renderCropResult(data);
+      // the fertilizer tab shows (read-only) the crop the Crop Predictor recommended
+      const fc = document.getElementById('fert-crop-type');
+      if (fc) fc.value = data.metadata?.title || data.crop;
+      if (changed) debouncedFertPredict();
     }
   } catch (err) {
     console.error('Crop prediction fetch error:', err);
@@ -332,8 +355,6 @@ function loadFertPreset(name) {
 
   const soilEl = document.getElementById('fert-soil-type');
   if (soilEl) soilEl.value = p.Soil_Type;
-  const cropEl = document.getElementById('fert-crop-type');
-  if (cropEl) cropEl.value = p.Crop_Type;
 
   const setVal = (key, val) => {
     const s = document.getElementById(`fert-in-${key}`);
@@ -349,6 +370,7 @@ function loadFertPreset(name) {
   setVal('Phosphorous', p.Phosphorous);
   setVal('Potassium', p.Potassium);
 
+  mirrorSoil('fert'); executeCropPrediction(true);
   executeFertPrediction(false);
 }
 
@@ -368,7 +390,7 @@ async function executeFertPrediction(isSilent = false) {
 
   const payload = {
     Soil_Type: document.getElementById('fert-soil-type')?.value || 'Loamy',
-    Crop_Type: document.getElementById('fert-crop-type')?.value || 'Sugarcane',
+    Crop_Type: latestCropData?.crop || 'rice',
     Moisture: parseFloat(document.getElementById('fert-in-Moisture')?.value || 45),
     Temperature: parseFloat(document.getElementById('fert-in-Temperature')?.value || 28),
     Humidity: parseFloat(document.getElementById('fert-in-Humidity')?.value || 60),
@@ -478,6 +500,21 @@ function renderFertResult(data) {
   const badge = document.getElementById('fert-confidence-badge');
   if (badge) badge.innerText = `${data.model_used} • ${data.confidence.toFixed(1)}% Score`;
 
+  // Honest reliability banner (real Kaggle fertilizer labels carry no signal)
+  const card = document.getElementById('fert-result-card');
+  if (card) {
+    let w = document.getElementById('fert-reliability-warning');
+    if (!w) {
+      w = document.createElement('div');
+      w.id = 'fert-reliability-warning';
+      w.className = 'mb-3 p-3 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40';
+      card.prepend(w);
+    }
+    w.textContent = data.model_reliability_warning ? '⚠ ' + data.model_reliability_warning : '';
+    w.style.display = data.model_reliability_warning ? 'block' : 'none';
+  }
+
+
   // Cross-Model consensus
   const comp = data.multi_model_comparison;
   if (comp) {
@@ -541,6 +578,9 @@ function syncSoilReport() {
     dateEl.innerText = today.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
+  const idEl = document.getElementById('shc-report-id');
+  if (idEl) idEl.innerText = 'DEMO-' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
   // Read active inputs
   const N = parseFloat(document.getElementById('crop-in-N')?.value || document.getElementById('fert-in-Nitrogen')?.value || 90);
   const P = parseFloat(document.getElementById('crop-in-P')?.value || document.getElementById('fert-in-Phosphorous')?.value || 45);
@@ -548,7 +588,7 @@ function syncSoilReport() {
   const pH = parseFloat(document.getElementById('crop-in-ph')?.value || 6.5);
   const moisture = parseFloat(document.getElementById('fert-in-Moisture')?.value || 45);
   const soilType = document.getElementById('fert-soil-type')?.value || 'Loamy';
-  const cropContext = document.getElementById('fert-crop-type')?.value || 'Sugarcane';
+  const cropContext = latestCropData?.metadata?.title || document.getElementById('fert-crop-type')?.value || 'Rice';
 
   // Profile
   const soilTypeEl = document.getElementById('shc-soil-type');
@@ -666,6 +706,24 @@ function syncSoilReport() {
   }
 
   if (window.lucide) window.lucide.createIcons();
+}
+
+// "Sync Live Inputs": re-run both predictions with the current inputs, then rebuild the report
+async function syncSoilReportLive() {
+  const btn = document.getElementById('shc-sync-btn');
+  const label = document.getElementById('shc-sync-label');
+  if (btn) btn.disabled = true;
+  if (label) label.innerText = 'Syncing…';
+  try {
+    await Promise.all([executeCropPrediction(true), executeFertPrediction(true)]);
+    syncSoilReport();
+    if (label) label.innerText = 'Synced ✓ ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    if (label) label.innerText = 'Sync failed, retry';
+  } finally {
+    if (btn) btn.disabled = false;
+    setTimeout(() => { if (label) label.innerText = 'Sync Live Inputs'; }, 4000);
+  }
 }
 
 // ============================================================
@@ -1480,6 +1538,8 @@ function applyGeoTelemetryToPredictor() {
   setVal('ph', t.ph);
   setVal('rainfall', t.rainfall);
 
+  mirrorSoil('crop'); executeFertPrediction(true);
+
   // Switch to Crop Predictor Tab
   switchTab('crop');
 
@@ -1494,6 +1554,7 @@ function applyGeoTelemetryToPredictor() {
 // INITIALIZATION ON PAGE LOAD
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
+  mirrorSoil('crop'); // start both tabs from the same soil values
   // Execute initial default predictions so the UI is immediately populated
   executeCropPrediction(true);
   executeFertPrediction(true);
@@ -1503,3 +1564,31 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => syncSoilReport(), 300);
 });
 
+
+// Benchmarks table: live numbers from the API (never hard-coded)
+async function loadBenchmarks() {
+  const body = document.getElementById('benchmark-body');
+  if (!body) return;
+  try {
+    const st = await (await fetch('/api/status')).json();
+    const rows = [];
+    for (const [key, label] of [['crop', 'Crop Recommendation'], ['fertilizer', 'Fertilizer Prediction']]) {
+      const q = st.data_quality[key];
+      for (const [name, m] of Object.entries(st.metrics[key])) {
+        const best = m.accuracy === q.best_accuracy_pct;
+        const verdict = q.warning ? 'AT CHANCE' : (best ? 'BEST' : 'OK');
+        rows.push(`<tr class="hover:bg-pine/40"><td class="py-3 px-4 font-bold text-emerald-vibrant">${label}</td>
+          <td class="py-3 px-4 text-white">${name}</td><td class="py-3 px-4 font-mono">${m.accuracy}%</td>
+          <td class="py-3 px-4 font-mono">${m.precision}%</td><td class="py-3 px-4 font-mono">${m.recall}%</td>
+          <td class="py-3 px-4 font-mono">${m.f1_score}%</td><td class="py-3 px-4 font-mono">${verdict}</td></tr>`);
+      }
+    }
+    body.innerHTML = rows.join('');
+    const w = st.data_quality.fertilizer.warning;
+    document.getElementById('benchmark-note').textContent =
+      `Chance level: crop ${st.data_quality.crop.chance_level_pct}%, fertilizer ${st.data_quality.fertilizer.chance_level_pct}%.` + (w ? ` Warning: ${w}` : '');
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="7" class="py-3 px-4">Could not load metrics.</td></tr>';
+  }
+}
+if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', loadBenchmarks); else loadBenchmarks();

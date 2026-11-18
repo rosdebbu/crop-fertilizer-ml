@@ -8,6 +8,7 @@ model benchmarking, and scientific evaluation endpoints.
 import os
 import json
 import numpy as np
+import joblib
 import pandas as pd
 from typing import Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
@@ -16,7 +17,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -35,7 +37,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -58,6 +60,44 @@ except Exception as e:
 crop_store = {}
 fert_store = {}
 
+def fit_and_score(X, y, cv_folds=0):
+    """Shared by both datasets: split, scale, fit 3 models, score them.
+    Scaling only matters for KNN; trees ignore it but one pipeline keeps the API simple."""
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    models = {
+        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
+        "Decision Tree": DecisionTreeClassifier(random_state=42),
+        "KNN": KNeighborsClassifier(n_neighbors=5)
+    }
+    metrics = {}
+    for name, m in models.items():
+        m.fit(X_train_scaled, y_train)
+        y_pred = m.predict(X_test_scaled)
+        metrics[name] = {
+            "accuracy": round(float(accuracy_score(y_test, y_pred)) * 100, 2),
+            "precision": round(float(precision_score(y_test, y_pred, average="weighted", zero_division=0)) * 100, 2),
+            "recall": round(float(recall_score(y_test, y_pred, average="weighted", zero_division=0)) * 100, 2),
+            "f1_score": round(float(f1_score(y_test, y_pred, average="weighted", zero_division=0)) * 100, 2)
+        }
+        if cv_folds:  # more honest than one lucky split
+            metrics[name]["cv_accuracy"] = round(float(cross_val_score(
+                make_pipeline(StandardScaler(), type(m)(**m.get_params())), X, y, cv=cv_folds).mean()) * 100, 2)
+    chance = round(100 / y.nunique(), 2)
+    best = max(v["accuracy"] for v in metrics.values())
+    quality = {
+        "chance_level_pct": chance,
+        "best_accuracy_pct": best,
+        # a model that can't beat guessing means the labels carry no signal in these features
+        "warning": None if best >= chance + 10 else
+            f"Best accuracy {best}% is at chance level ({chance}%): the dataset labels are not predictable from the features, so predictions are not reliable."
+    }
+    return scaler, models, metrics, quality
+
 def train_crop_models():
     crop_csv = os.path.join(DATA_DIR, "Crop_recommendation.csv")
     if not os.path.exists(crop_csv):
@@ -70,45 +110,15 @@ def train_crop_models():
     X = df[features]
     y = df[target]
     
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    scaler, trained_models, metrics, quality = fit_and_score(X, y, cv_folds=5)
     
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    
-    models = {
-        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "Decision Tree": DecisionTreeClassifier(random_state=42),
-        "KNN": KNeighborsClassifier(n_neighbors=5)
-    }
-    
-    trained_models = {}
-    metrics = {}
-    
-    for name, m in models.items():
-        m.fit(X_train_scaled, y_train)
-        y_pred = m.predict(X_test_scaled)
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-        rec = recall_score(y_test, y_pred, average="weighted", zero_division=0)
-        f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
-        
-        trained_models[name] = m
-        metrics[name] = {
-            "accuracy": round(float(acc) * 100, 2),
-            "precision": round(float(prec) * 100, 2),
-            "recall": round(float(rec) * 100, 2),
-            "f1_score": round(float(f1) * 100, 2)
-        }
-        
     crop_store["df"] = df
     crop_store["features"] = features
     crop_store["classes"] = sorted(y.unique().tolist())
     crop_store["scaler"] = scaler
     crop_store["models"] = trained_models
     crop_store["metrics"] = metrics
+    crop_store["quality"] = quality
     crop_store["feature_ranges"] = {
         col: {"min": float(df[col].min()), "max": float(df[col].max()), "mean": float(df[col].mean())}
         for col in features
@@ -116,7 +126,7 @@ def train_crop_models():
     print("[OK] Crop recommendation models trained successfully.")
 
 def train_fertilizer_models():
-    fert_csv = os.path.join(DATA_DIR, "Fertilizer_Prediction.csv")
+    fert_csv = os.environ.get("FERTILIZER_CSV") or os.path.join(DATA_DIR, "Fertilizer_Prediction.csv")
     if not os.path.exists(fert_csv):
         raise FileNotFoundError(f"Fertilizer dataset not found at {fert_csv}")
         
@@ -124,68 +134,59 @@ def train_fertilizer_models():
     target_col = "Fertilizer Name"
     
     le_soil = LabelEncoder()
-    le_crop = LabelEncoder()
     
     df["Soil_Type_encoded"] = le_soil.fit_transform(df["Soil Type"])
-    df["Crop_Type_encoded"] = le_crop.fit_transform(df["Crop Type"])
     
     feature_cols = [
         "Temperature", "Humidity", "Moisture",
-        "Soil_Type_encoded", "Crop_Type_encoded",
+        "Soil_Type_encoded",
         "Nitrogen", "Phosphorous", "Potassium"
     ]
     
     X = df[feature_cols]
     y = df[target_col]
     
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    scaler, trained_models, metrics, quality = fit_and_score(X, y, cv_folds=5 if len(df) <= 20000 else 0)  # CV on 100k rows is too slow
     
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    
-    models = {
-        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "Decision Tree": DecisionTreeClassifier(random_state=42),
-        "KNN": KNeighborsClassifier(n_neighbors=5)
-    }
-    
-    trained_models = {}
-    metrics = {}
-    
-    for name, m in models.items():
-        m.fit(X_train_scaled, y_train)
-        y_pred = m.predict(X_test_scaled)
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-        rec = recall_score(y_test, y_pred, average="weighted", zero_division=0)
-        f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
-        
-        trained_models[name] = m
-        metrics[name] = {
-            "accuracy": round(float(acc) * 100, 2),
-            "precision": round(float(prec) * 100, 2),
-            "recall": round(float(rec) * 100, 2),
-            "f1_score": round(float(f1) * 100, 2)
-        }
-        
     fert_store["df"] = df
     fert_store["feature_cols"] = feature_cols
     fert_store["le_soil"] = le_soil
-    fert_store["le_crop"] = le_crop
     fert_store["soil_types"] = sorted(df["Soil Type"].unique().tolist())
-    fert_store["crop_types"] = sorted(df["Crop Type"].unique().tolist())
     fert_store["classes"] = sorted(y.unique().tolist())
     fert_store["scaler"] = scaler
     fert_store["models"] = trained_models
     fert_store["metrics"] = metrics
+    fert_store["quality"] = quality
     print("[OK] Fertilizer prediction models trained successfully.")
 
-# Train models on import/startup
-train_crop_models()
-train_fertilizer_models()
+# Train on first start, then reuse a joblib cache (retrains automatically if a CSV changes)
+CACHE_PATH = os.path.join(BASE_DIR, ".model_cache.joblib")
+MODEL_VERSION = 2  # v2: fertilizer model no longer uses crop type
+
+def _data_signature():
+    fert = os.environ.get("FERTILIZER_CSV") or os.path.join(DATA_DIR, "Fertilizer_Prediction.csv")
+    # MODEL_VERSION: bump when the training code or feature list changes, so old caches are discarded
+    return [MODEL_VERSION] + [(p, os.path.getmtime(p), os.path.getsize(p)) for p in
+            (os.path.join(DATA_DIR, "Crop_recommendation.csv"), fert)]
+
+def load_or_train():
+    sig = _data_signature()
+    try:
+        cached = joblib.load(CACHE_PATH)
+        if cached["sig"] == sig:
+            crop_store.update(cached["crop"]); fert_store.update(cached["fert"])
+            print("[OK] Models loaded from cache.")
+            return
+    except Exception:
+        pass  # no/old/corrupt cache -> retrain
+    train_crop_models()
+    train_fertilizer_models()
+    try:
+        joblib.dump({"sig": sig, "crop": crop_store, "fert": fert_store}, CACHE_PATH)
+    except Exception as e:
+        print(f"[WARN] could not write model cache: {e}")
+
+load_or_train()
 
 # ============================================================
 # CROP METADATA & ADVICE DICTIONARY
@@ -353,7 +354,9 @@ class FertPredictRequest(BaseModel):
     Humidity: float = Field(..., description="Relative humidity in percentage", ge=0, le=100)
     Moisture: float = Field(..., description="Soil moisture in percentage", ge=0, le=100)
     Soil_Type: str = Field(..., description="Soil type name")
-    Crop_Type: str = Field(..., description="Crop type name")
+    # Not a model input (the fertilizer dataset's 11-crop list differs from the 22-crop recommender);
+    # it is the crop chosen by the Crop Predictor and only personalises the advice text.
+    Crop_Type: Optional[str] = Field("the selected crop", description="Crop name for advice text only")
     Nitrogen: float = Field(..., description="Nitrogen level in soil", ge=0, le=200)
     Phosphorous: float = Field(..., description="Phosphorus level in soil", ge=0, le=200)
     Potassium: float = Field(..., description="Potassium level in soil", ge=0, le=200)
@@ -374,10 +377,13 @@ def get_status():
         "crop_classes": crop_store["classes"],
         "fertilizer_classes": fert_store["classes"],
         "soil_types": fert_store["soil_types"],
-        "crop_types": fert_store["crop_types"],
         "metrics": {
             "crop": crop_store["metrics"],
             "fertilizer": fert_store["metrics"]
+        },
+        "data_quality": {
+            "crop": crop_store["quality"],
+            "fertilizer": fert_store["quality"]
         }
     }
 
@@ -465,19 +471,15 @@ def predict_crop(req: CropPredictRequest):
 def predict_fertilizer(req: FertPredictRequest):
     # Encode categoricals
     le_soil = fert_store["le_soil"]
-    le_crop = fert_store["le_crop"]
     
     if req.Soil_Type not in le_soil.classes_:
         raise HTTPException(status_code=400, detail=f"Invalid Soil Type: {req.Soil_Type}. Valid: {list(le_soil.classes_)}")
-    if req.Crop_Type not in le_crop.classes_:
-        raise HTTPException(status_code=400, detail=f"Invalid Crop Type: {req.Crop_Type}. Valid: {list(le_crop.classes_)}")
         
     soil_enc = int(le_soil.transform([req.Soil_Type])[0])
-    crop_enc = int(le_crop.transform([req.Crop_Type])[0])
     
     features = [
         req.Temperature, req.Humidity, req.Moisture,
-        soil_enc, crop_enc,
+        soil_enc,
         req.Nitrogen, req.Phosphorous, req.Potassium
     ]
     
@@ -545,7 +547,8 @@ def predict_fertilizer(req: FertPredictRequest):
         "probabilities": probs,
         "multi_model_comparison": comparison,
         "metadata": metadata,
-        "diagnostics": diagnostics
+        "diagnostics": diagnostics,
+        "model_reliability_warning": fert_store["quality"]["warning"]
     }
 
 @app.get("/api/data/crop/sample")
@@ -1094,7 +1097,8 @@ def analyze_geo_location(location: str = "chennai"):
         "mandi_prices": profile.get("mandi_prices", []),
         "social_web_feed": profile.get("social_web_feed", []),
         "sowing_calendar": profile.get("sowing_calendar", {}),
-        "location_profile": profile
+        "location_profile": profile,
+        "data_source": "Static illustrative sample data (not live weather, satellite or mandi feeds)"
     }
 
 @app.post("/api/farmer/profitability")
@@ -1289,6 +1293,8 @@ if os.path.exists(CHARTS_FERT_DIR):
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/")
+@app.get("/studio")
+@app.get("/studio/index.html")
 def serve_index():
     index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
@@ -1297,8 +1303,21 @@ def serve_index():
 
 if __name__ == "__main__":
     import uvicorn
+    import socket
+
+    def is_port_in_use(port_num: int) -> bool:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(("127.0.0.1", port_num)) == 0
+
+    target_port = int(os.environ.get("PORT", 8000))
+    if is_port_in_use(target_port):
+        candidate = 8001
+        while is_port_in_use(candidate):
+            candidate += 1
+        target_port = candidate
+
     print("\n" + "=" * 60)
     print("[*] CROP & FERTILIZER ML PLATFORM RUNNING")
-    print("[*] Open your browser at: http://localhost:8000")
+    print(f"[*] Open your browser at: http://localhost:{target_port}")
     print("=" * 60 + "\n")
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("app:app", host="0.0.0.0", port=target_port, reload=False)
