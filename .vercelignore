@@ -4,6 +4,8 @@
 __pycache__
 *.pyc
 .model_cache.joblib
+/.model_cache.joblib
+*.joblib
 paper
 report
 notebooks
