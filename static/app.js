@@ -155,7 +155,10 @@ async function handleCropPredict(e) {
 
 async function executeCropPrediction(isSilent = false) {
   const submitBtn = document.getElementById('crop-submit-btn');
-  const originalText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn && !submitBtn.dataset.originalHtml) {
+    submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+  }
+  const originalText = submitBtn ? submitBtn.dataset.originalHtml : '';
   
   if (!isSilent && submitBtn) {
     submitBtn.innerHTML = `<span class="inline-block animate-spin mr-2">⏳</span> Computing Crop Recommendation...`;
@@ -381,7 +384,10 @@ async function handleFertPredict(e) {
 
 async function executeFertPrediction(isSilent = false) {
   const submitBtn = document.getElementById('fert-submit-btn');
-  const originalText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn && !submitBtn.dataset.originalHtml) {
+    submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+  }
+  const originalText = submitBtn ? submitBtn.dataset.originalHtml : '';
 
   if (!isSilent && submitBtn) {
     submitBtn.innerHTML = `<span class="inline-block animate-spin mr-2">⏳</span> Computing Prescription...`;

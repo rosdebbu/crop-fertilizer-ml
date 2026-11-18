@@ -159,32 +159,72 @@ def train_fertilizer_models():
     fert_store["quality"] = quality
     print("[OK] Fertilizer prediction models trained successfully.")
 
-# Train on first start, then reuse a joblib cache (retrains automatically if a CSV changes)
-CACHE_PATH = os.path.join(BASE_DIR, ".model_cache.joblib")
+# Train on first start (or lazily on serverless), then reuse a joblib cache
+CACHE_DIR = "/tmp" if os.environ.get("VERCEL") else BASE_DIR
+CACHE_PATH = os.path.join(CACHE_DIR, ".model_cache.joblib")
+CROP_CACHE_PATH = os.path.join(CACHE_DIR, ".crop_cache.joblib")
+FERT_CACHE_PATH = os.path.join(CACHE_DIR, ".fert_cache.joblib")
 MODEL_VERSION = 2  # v2: fertilizer model no longer uses crop type
 
-def _data_signature():
-    fert = os.environ.get("FERTILIZER_CSV") or os.path.join(DATA_DIR, "Fertilizer_Prediction.csv")
-    # MODEL_VERSION: bump when the training code or feature list changes, so old caches are discarded
-    return [MODEL_VERSION] + [(p, os.path.getmtime(p), os.path.getsize(p)) for p in
-            (os.path.join(DATA_DIR, "Crop_recommendation.csv"), fert)]
+def _crop_signature():
+    p = os.path.join(DATA_DIR, "Crop_recommendation.csv")
+    return [MODEL_VERSION, p, os.path.getmtime(p), os.path.getsize(p)]
 
-def load_or_train():
-    sig = _data_signature()
-    try:
-        cached = joblib.load(CACHE_PATH)
-        if cached["sig"] == sig:
-            crop_store.update(cached["crop"]); fert_store.update(cached["fert"])
-            print("[OK] Models loaded from cache.")
-            return
-    except Exception:
-        pass  # no/old/corrupt cache -> retrain
+def _fert_signature():
+    p = os.environ.get("FERTILIZER_CSV") or os.path.join(DATA_DIR, "Fertilizer_Prediction.csv")
+    return [MODEL_VERSION, p, os.path.getmtime(p), os.path.getsize(p)]
+
+def _data_signature():
+    return [_crop_signature(), _fert_signature()]
+
+def ensure_crop_models():
+    if "models" in crop_store:
+        return
+    sig = _crop_signature()
+    for path, key in ((CROP_CACHE_PATH, None), (CACHE_PATH, "crop")):
+        try:
+            cached = joblib.load(path)
+            if key is None and cached.get("sig") == sig:
+                crop_store.update(cached["crop"])
+                return
+            if key and cached.get("sig") == _data_signature():
+                crop_store.update(cached["crop"])
+                return
+        except Exception:
+            pass
     train_crop_models()
+    try:
+        joblib.dump({"sig": sig, "crop": crop_store}, CROP_CACHE_PATH)
+    except Exception as e:
+        print(f"[WARN] could not write crop cache: {e}")
+
+def ensure_fert_models():
+    if "models" in fert_store:
+        return
+    sig = _fert_signature()
+    for path, key in ((FERT_CACHE_PATH, None), (CACHE_PATH, "fert")):
+        try:
+            cached = joblib.load(path)
+            if key is None and cached.get("sig") == sig:
+                fert_store.update(cached["fert"])
+                return
+            if key and cached.get("sig") == _data_signature():
+                fert_store.update(cached["fert"])
+                return
+        except Exception:
+            pass
     train_fertilizer_models()
     try:
-        joblib.dump({"sig": sig, "crop": crop_store, "fert": fert_store}, CACHE_PATH)
+        joblib.dump({"sig": sig, "fert": fert_store}, FERT_CACHE_PATH)
     except Exception as e:
-        print(f"[WARN] could not write model cache: {e}")
+        print(f"[WARN] could not write fert cache: {e}")
+
+def load_or_train():
+    if os.environ.get("VERCEL"):
+        # Serverless: train lazily per endpoint so static pages & crop predictions stay fast
+        return
+    ensure_crop_models()
+    ensure_fert_models()
 
 load_or_train()
 
@@ -368,6 +408,8 @@ class FertPredictRequest(BaseModel):
 
 @app.get("/api/status")
 def get_status():
+    ensure_crop_models()
+    ensure_fert_models()
     return {
         "status": "online",
         "version": "2.0.0",
@@ -389,6 +431,7 @@ def get_status():
 
 @app.post("/api/predict/crop")
 def predict_crop(req: CropPredictRequest):
+    ensure_crop_models()
     features = [req.N, req.P, req.K, req.temperature, req.humidity, req.ph, req.rainfall]
     X_input = np.array([features])
     X_scaled = crop_store["scaler"].transform(X_input)
@@ -469,6 +512,7 @@ def predict_crop(req: CropPredictRequest):
 
 @app.post("/api/predict/fertilizer")
 def predict_fertilizer(req: FertPredictRequest):
+    ensure_fert_models()
     # Encode categoricals
     le_soil = fert_store["le_soil"]
     
@@ -553,6 +597,7 @@ def predict_fertilizer(req: FertPredictRequest):
 
 @app.get("/api/data/crop/sample")
 def get_crop_sample(limit: int = 50):
+    ensure_crop_models()
     df = crop_store["df"]
     sample_df = df.sample(min(limit, len(df)), random_state=42)
     numeric_cols = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
@@ -573,6 +618,7 @@ def get_crop_sample(limit: int = 50):
 
 @app.get("/api/data/fertilizer/sample")
 def get_fert_sample(limit: int = 50):
+    ensure_fert_models()
     raw_cols = ["Temperature", "Humidity", "Moisture", "Soil Type", "Crop Type", "Nitrogen", "Phosphorous", "Potassium", "Fertilizer Name"]
     df = fert_store["df"][raw_cols]
     sample_df = df.sample(min(limit, len(df)), random_state=42)
@@ -594,6 +640,8 @@ def get_fert_sample(limit: int = 50):
 
 @app.get("/api/metrics")
 def get_metrics():
+    ensure_crop_models()
+    ensure_fert_models()
     return {
         "crop": crop_store["metrics"],
         "fertilizer": fert_store["metrics"]
@@ -1172,6 +1220,7 @@ def calculate_fertilizer_dosage(req: FarmerDosageRequest):
 
 @app.post("/api/farmer/climate-stress")
 def simulate_climate_stress(req: CropPredictRequest):
+    ensure_crop_models()
     rf_model = crop_store["models"]["Random Forest"]
     scaler = crop_store["scaler"]
     
