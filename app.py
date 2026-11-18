@@ -382,7 +382,7 @@ FERT_METADATA = {
 class CropPredictRequest(BaseModel):
     N: float = Field(..., description="Nitrogen content (ppm or kg/ha)", ge=0, le=200)
     P: float = Field(..., description="Phosphorus content (ppm or kg/ha)", ge=0, le=200)
-    K: float = Field(..., description="Potassium content (ppm or kg/ha)", ge=0, le=200)
+    K: float = Field(..., description="Potassium content (ppm or kg/ha)", ge=0, le=250)
     temperature: float = Field(..., description="Temperature in Celsius", ge=0, le=60)
     humidity: float = Field(..., description="Relative humidity in percentage", ge=0, le=100)
     ph: float = Field(..., description="Soil pH value", ge=0, le=14)
@@ -399,7 +399,7 @@ class FertPredictRequest(BaseModel):
     Crop_Type: Optional[str] = Field("the selected crop", description="Crop name for advice text only")
     Nitrogen: float = Field(..., description="Nitrogen level in soil", ge=0, le=200)
     Phosphorous: float = Field(..., description="Phosphorus level in soil", ge=0, le=200)
-    Potassium: float = Field(..., description="Potassium level in soil", ge=0, le=200)
+    Potassium: float = Field(..., description="Potassium level in soil", ge=0, le=250)
     model_name: Optional[str] = "Random Forest"
 
 # ============================================================
